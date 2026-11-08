@@ -1,0 +1,7 @@
+[
+  {
+    "name": "projectcreator-events",
+    "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/monitor.sh\" \"${CLAUDE_PROJECT_DIR}\"",
+    "description": "ProjectCreator: nové zprávy a žádosti jiných AI agentů"
+  }
+]

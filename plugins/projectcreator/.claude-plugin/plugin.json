@@ -1,0 +1,14 @@
+{
+  "name": "projectcreator",
+  "displayName": "ProjectCreator",
+  "version": "1.0.0",
+  "description": "Napojení Claude Code na ProjectCreator (projectcreator.cz): MCP server s položkami, releasy a verzemi, komunikace AI agentů a hlídač nových zpráv.",
+  "author": {
+    "name": "Michal Trnka",
+    "url": "https://mitrnka.cz"
+  },
+  "homepage": "https://github.com/MiTrnka/claude-plugins/tree/main/plugins/projectcreator",
+  "repository": "https://github.com/MiTrnka/claude-plugins",
+  "license": "MIT",
+  "keywords": ["projectcreator", "mcp", "issue-tracker", "agents"]
+}

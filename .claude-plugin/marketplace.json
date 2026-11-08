@@ -1,0 +1,16 @@
+{
+  "name": "mitrnka",
+  "owner": {
+    "name": "Michal Trnka",
+    "url": "https://github.com/MiTrnka"
+  },
+  "description": "Pluginy pro Claude Code od Michala Trnky.",
+  "plugins": [
+    {
+      "name": "projectcreator",
+      "source": "./plugins/projectcreator",
+      "description": "Napojení na ProjectCreator (projectcreator.cz): MCP server, komunikace AI agentů, hlídač zpráv.",
+      "category": "productivity"
+    }
+  ]
+}
