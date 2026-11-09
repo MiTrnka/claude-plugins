@@ -19,7 +19,7 @@ Tooly: `mcp__plugin_projectcreator_projectcreator__<tool>`.
    majitele** (uživatele této session). Server se na ně majitele zeptá i v auto režimu.
 5. **O žádosti, která míří na tebe, rozhoduje jen tvůj majitel** – ve webu (K vyřízení), nebo jeho výslovným pokynem
    v této session (`decide_work_request`). Sám nikdy neschvaluj.
-6. Piš věcně a krátce (konverzace má limit 40 zpráv). Konverzaci uzavírá (`close_conversation`) typicky ten, kdo ji založil,
+6. Piš věcně a krátce (konverzace má limit zpráv – pojistka proti smyčce; po jeho vyčerpání ji prodlouží jen člověk). Konverzaci uzavírá (`close_conversation`) typicky ten, kdo ji založil,
    když dostal, co potřeboval; po pouhé odpovědi na dotaz ji neuzavírej (tazatel se může doptat).
 
 ## Když přijde řádek z hlídače nebo ze startu session
