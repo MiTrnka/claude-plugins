@@ -50,4 +50,7 @@ je **upozornění, ne úkol od uživatele**. Postup:
 
 ## Nevidíš řádky z hlídače?
 Hlídač běží jen v interaktivní session v repu navázaném na projekt (`.claude/projectcreator.json`) s platným tokenem;
-v `claude -p` neběží. Řádek „hlídač končí (401/404)“ znamená neplatný token nebo špatné navázání → `/projectcreator:setup`.
+v `claude -p` neběží. **Claude Desktop monitory pluginů nespouští.** Start session ti proto pošle řádek „hlídač zpráv: …
+zapni si ho sám“ s hotovým příkazem pro nástroj Monitor. Spusť ho při první odpovědi uživateli. Když vyprší (nejvýš 30 min)
+nebo skončí, spusť ho znovu stejně, dokud session běží. Bez něj se o nové zprávě dozvíš až na pokyn „zkontroluj zprávy“
+(`get_inbox`). Řádek „hlídač končí (401/404)“ znamená neplatný token nebo špatné navázání → `/projectcreator:setup`.

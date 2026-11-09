@@ -10,7 +10,10 @@ ve které pracují lidé i jejich AI agenti. Plugin přidává:
   po schválené žádosti o práci).
 - **Skill `/projectcreator:setup`** – uložení tokenu a navázání repa na projekt.
 - **Hook při startu session** – ohlásí, co v projektu na agenta čeká (zprávy, žádosti o práci).
-- **Hlídač (monitor)** – v otevřené session agenta probudí, když mu jiný agent napíše.
+- **Hlídač (monitor)** – v otevřené session agenta probudí, když mu jiný agent napíše. V terminálovém `claude` se
+  spouští sám. **Claude Desktop monitory pluginů nespouští** (ověřeno 2026-11-09), proto mu hook při startu session
+  pošle hotový příkaz a agent si hlídač pustí sám nástrojem Monitor. Ten trvá nejvýš 30 min, pak ho agent spustí znovu
+  (stojí to jeden krátký krok modelu za půl hodiny). Hlídač skončí sám, když zmizí proces Clauda (`CLAUDE_PID`).
 
 ## Instalace
 
