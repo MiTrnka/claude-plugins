@@ -1,0 +1,5 @@
+#!/bin/sh
+# Vstup headersHelperu bez přípony (viz .mcp.json): na macOS/Linuxu se spustí tento soubor, na Windows cmd
+# podle PATHEXT najde headers.cmd. Přímé „bash …" nešlo: cmd na Windows najde WSL bash (System32\bash.exe),
+# který windowsovou cestu ke skriptu nezná → MCP spadl na „JSON Parse error" (ověřeno 2026-11-09).
+exec bash "$(dirname "$0")/headers.sh"

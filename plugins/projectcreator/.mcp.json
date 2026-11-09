@@ -3,7 +3,7 @@
     "projectcreator": {
       "type": "http",
       "url": "${PROJECTCREATOR_URL:-https://projectcreator.cz}/mcp",
-      "headersHelper": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/headers.sh\""
+      "headersHelper": "\"${CLAUDE_PLUGIN_ROOT}/scripts/headers\""
     }
   }
 }

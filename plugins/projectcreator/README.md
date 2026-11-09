@@ -58,5 +58,9 @@ Bez navázaného repa hook i hlídač mlčí; MCP nástroje fungují v každém 
 Proměnné musí být nastavené před startem Claude Code. Pozor: proměnná, jejíž jméno obsahuje `TOKEN`, `KEY`, `AUTH`…,
 se do `headersHelper` nedostane (Claude Code je z pluginových pomocníků odstraňuje) – proto se umístění tokenu volí adresářem.
 
-Skripty jsou čistý bash (kompatibilní s bash 3.2 na macOS) + curl, bez jq/python/node. `scripts/setup.sh` bez argumentů
+Skripty jsou čistý bash (kompatibilní s bash 3.2 na macOS) + curl, bez jq/python/node.
+Výjimka je `headersHelper` MCP serveru: Claude Code ho na Windows spouští přes `cmd`, kde příkaz `bash` najde **WSL**
+(`System32ash.exe`) místo Git Bash a windowsovou cestu ke skriptu nezná (MCP pak spadne na „JSON Parse error").
+Proto `.mcp.json` volá `scripts/headers` bez přípony: na Windows ho cmd spustí jako `headers.cmd`, jinde jako shellový
+spouštěč `headers.sh`. Hook a hlídač běží v Git Bash, tam `bash` funguje. `scripts/setup.sh` bez argumentů
 vypíše nápovědu.
