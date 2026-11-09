@@ -92,3 +92,23 @@ pc_get() {
     *) PC_CODE="000" ;;
   esac
 }
+
+# POST na REST API pluginu (bez těla). pc_post <cesta s query> <max sekund> → PC_CODE, PC_BODY jako pc_get.
+pc_post() {
+  local out
+  out=$(printf 'header = "Authorization: Bearer %s"\n' "$PC_TOKEN" |
+        curl -s -K - --max-time "$2" -X POST -H 'Accept: text/plain' -H 'Content-Length: 0' -w '\n%{http_code}' "$PC_URL$1" 2>/dev/null)
+  PC_CODE="${out##*$'\n'}"
+  PC_BODY="${out%$'\n'*}"
+  [ "$PC_BODY" = "$out" ] && PC_BODY=""
+  PC_BODY="${PC_BODY%$'\n'}"
+  case "$PC_CODE" in
+    [0-9][0-9][0-9]) ;;
+    *) PC_CODE="000" ;;
+  esac
+}
+
+# Id session Claude Code jen z bezpečných znaků (do URL a příkazové řádky); prázdné = neznámé.
+pc_clean_session() {
+  printf '%s' "$1" | tr -cd 'A-Za-z0-9_-' | cut -c1-100
+}

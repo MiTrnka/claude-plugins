@@ -8,7 +8,10 @@
 #     zůstal běžet jako sirotek a „spolykal" upozornění, která patří nové session (ověřeno 2026-11-09 na Windows);
 #   - volitelný 2. argument = nejdelší doba běhu v sekundách: hlídač pak skončí ČISTĚ mezi dvěma dotazy (pro nástroj
 #     Monitor v Claude Desktopu, který monitor po 30 min zabíjí – zabití uprostřed dotazu by mohlo ztratit upozornění).
-# Argument: adresář projektu (výchozí CLAUDE_PROJECT_DIR, jinak aktuální adresář – monitor běží v adresáři session).
+#   - hlídá jen session, která hlídání drží (od pluginu 1.0.4, server ≥ 1.0.40): Id session = 3. argument, jinak
+#     CLAUDE_CODE_SESSION_ID. Převzala-li hlídání jiná (novější) session, server vrátí 409 → jeden řádek a konec.
+#     4. argument „claim“ = nejdřív hlídání převzít (pokyn „hlídej zprávy tady“).
+# Argumenty: adresář projektu (výchozí CLAUDE_PROJECT_DIR, jinak aktuální adresář), max. běh v s, Id session, „claim“.
 . "$(dirname "$0")/pc-common.sh"
 
 dir="$1"
@@ -19,8 +22,16 @@ max_s="$2"
 case "$max_s" in
   ''|*[!0-9]*) max_s=0 ;;
 esac
+session=$(pc_clean_session "${3:-$CLAUDE_CODE_SESSION_ID}")
 pc_find_link "$dir" || exit 0
 pc_read_token || exit 0
+sq=""
+[ -n "$session" ] && sq="&session=$session"
+
+if [ "$4" = "claim" ] && [ -n "$session" ]; then
+  pc_post "/api/agent/listen?project=$PC_PROJECT$sq" 15
+  [ "$PC_CODE" = "200" ] && echo "ProjectCreator $PC_PROJECT · hlídání zpráv teď drží tahle session."
+fi
 
 # Žije ještě proces Clauda? Bez CLAUDE_PID se nekontroluje. Na Windows (Git Bash) je CLAUDE_PID windowsové PID,
 # které `kill -0` nezná → tasklist.
@@ -42,7 +53,7 @@ while :; do
     exit 0
   fi
   started=$SECONDS
-  pc_get "/api/agent/events/wait?project=$PC_PROJECT&timeout=$wait_s" $((wait_s + 35))
+  pc_get "/api/agent/events/wait?project=$PC_PROJECT&timeout=$wait_s$sq" $((wait_s + 35))
   case "$PC_CODE" in
     200)
       backoff=5
@@ -55,6 +66,11 @@ while :; do
       ;;
     401)
       echo "ProjectCreator: server odmítl token AI (401) – hlídač zpráv končí. Ověř token přes /projectcreator:setup."
+      exit 0
+      ;;
+    409)
+      msg=$(printf '%s' "$PC_BODY" | head -n 1)
+      echo "${msg:-ProjectCreator $PC_PROJECT · hlídání zpráv převzala jiná session – hlídač znovu nespouštěj.}"
       exit 0
       ;;
     403|404)

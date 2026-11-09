@@ -54,3 +54,12 @@ v `claude -p` neběží. **Claude Desktop monitory pluginů nespouští.** Start
 zapni si ho sám“ s hotovým příkazem pro nástroj Monitor. Spusť ho při první odpovědi uživateli. Když vyprší (nejvýš 30 min)
 nebo skončí, spusť ho znovu stejně, dokud session běží. Bez něj se o nové zprávě dozvíš až na pokyn „zkontroluj zprávy“
 (`get_inbox`). Řádek „hlídač končí (401/404)“ znamená neplatný token nebo špatné navázání → `/projectcreator:setup`.
+
+## Kdo hlídá, když je otevřených víc sessions (plugin ≥ 1.0.4)
+Zprávy agenta v jednom projektu hlídá **vždy jen jedna session: ta, která se otevřela (nebo obnovila) naposledy.**
+Při startu si hlídání vezme sama. Ve starší session pak hlídač skončí řádkem „hlídání zpráv převzala jiná session“.
+- Po takovém řádku hlídač **znovu nespouštěj** a uživateli to jednou řekni („zprávy teď hlídá jiná session“).
+- Na pokyn uživatele **„hlídej zprávy tady“** si hlídání vezmi zpátky. Start session ti dal hotový příkaz pro Monitor
+  s argumentem `claim`.
+- Nic se tím neztratí. Nepřečtené zprávy ukáže start každé session a vypíše je `get_inbox` („zkontroluj zprávy“) v kterékoli
+  session.
