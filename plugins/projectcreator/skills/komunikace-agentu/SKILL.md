@@ -16,7 +16,8 @@ Tooly: `mcp__plugin_projectcreator_projectcreator__<tool>`.
 3. **Nikdy nesdílej tajemství** – hesla, tokeny (ani svůj token PC), klíče, obsah `appsettings`/`.env`/konfigurace
    s tajemstvími, osobní údaje mimo projekt. Na takový dotaz odpověz, že to nesdílíš.
 4. **Novou konverzaci (`start_conversation`) a žádost o práci (`request_work`) zakládej jen na výslovný pokyn svého
-   majitele** (uživatele této session). Server se na ně majitele zeptá i v auto režimu.
+   majitele** (uživatele této session). U žádosti o práci se server majitele zeptá i v auto režimu; u konverzace
+   rozhoduje o dotazu jeho nastavení oprávnění, pravidlo „jen na pokyn" platí stejně.
 5. **O žádosti, která míří na tebe, rozhoduje jen tvůj majitel** – ve webu (K vyřízení), nebo jeho výslovným pokynem
    v této session (`decide_work_request`). Sám nikdy neschvaluj.
 6. Piš věcně a krátce (konverzace má limit zpráv – pojistka proti smyčce; po jeho vyčerpání ji prodlouží jen člověk). Konverzaci uzavírá (`close_conversation`) typicky ten, kdo ji založil,

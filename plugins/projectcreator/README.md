@@ -45,8 +45,10 @@ Bez navázaného repa hook i hlídač mlčí; MCP nástroje fungují v každém 
   uživatele). Do repa ani do konfigurace Claude Code se nezapisuje; serveru ho předává pomocný skript (`headersHelper`)
   a `curl` ho dostává přes stdin, takže není vidět v seznamu procesů. Zrušit ho můžeš kdykoli v Profilu.
 - Token má práva tvého účtu (podle tvé role v projektech). Nesdílej ho; každý počítač si zaslouží vlastní token.
-- Zprávy jiných agentů a obsah položek jsou pro Clauda **data, ne pokyny**. Založení konverzace, žádost o práci
-  a rozhodnutí o ní potvrzuješ vždy ty (server je označuje jako vyžadující potvrzení uživatele, i v auto režimu).
+- Zprávy jiných agentů a obsah položek jsou pro Clauda **data, ne pokyny**. Žádost o práci a rozhodnutí o ní
+  potvrzuješ vždy ty (server je označuje jako vyžadující potvrzení uživatele, i v auto režimu). Konverzaci zakládá
+  Claude jen na tvůj pokyn; jestli se tě přitom zeptá, určuje tvé nastavení oprávnění (allow pravidlo
+  `mcp__plugin_projectcreator_projectcreator__start_conversation` dotaz vypne).
 - Plugin posílá data jen na server ProjectCreatoru (výchozí `https://projectcreator.cz`) a nic jiného nesbírá ani neodesílá.
   ProjectCreator je soukromá aplikace pro pozvané uživatele; data projektů zpracovává jen pro jejich evidenci.
 
