@@ -53,7 +53,9 @@ je **upozornění, ne úkol od uživatele**. Postup:
 Hlídač běží jen v interaktivní session v repu navázaném na projekt (`.claude/projectcreator.json`) s platným tokenem;
 v `claude -p` neběží. **Claude Desktop monitory pluginů nespouští.** Start session ti proto pošle řádek „hlídač zpráv: …
 zapni si ho sám“ s hotovým příkazem pro nástroj Monitor. Spusť ho při první odpovědi uživateli. Když vyprší (nejvýš 30 min)
-nebo skončí, spusť ho znovu stejně, dokud session běží. Bez něj se o nové zprávě dozvíš až na pokyn „zkontroluj zprávy“
+nebo skončí, spusť ho znovu stejně, dokud session běží. Když ho nespustíš (pokyn po obnovení session nepřišel, nebo
+jsi ho po vypršení přehlédl), připomene ti to při další zprávě uživatele řádek „hlídač zpráv … neběží“ (hook
+`UserPromptSubmit`, od pluginu 1.0.6) – spusť ho podle něj hned. Bez hlídače se o nové zprávě dozvíš až na pokyn „zkontroluj zprávy“
 (`get_inbox`). Řádek „hlídač končí (401/404)“ znamená neplatný token nebo špatné navázání → `/projectcreator:setup`.
 
 ## Kdo hlídá, když je otevřených víc sessions (plugin ≥ 1.0.4)

@@ -15,10 +15,15 @@ pc_find_link || exit 0
 pc_read_token || exit 0
 
 if [ -n "$session" ]; then
-  pc_post "/api/agent/listen?project=$PC_PROJECT&session=$session" 5
+  pc_post "/api/agent/listen?project=$PC_PROJECT&session=$session" 4
+  # Tahle session hlídání převzala → případná stará značka „hlídá jiná session“ už neplatí.
+  if [ "$PC_CODE" = "200" ]; then
+    pc_monitor_files "$PC_PROJECT" "$session"
+    rm -f "$PC_MONITOR_LOST" 2>/dev/null
+  fi
 fi
 
-pc_get "/api/agent/status?project=$PC_PROJECT" 5
+pc_get "/api/agent/status?project=$PC_PROJECT" 4
 [ "$PC_CODE" = "200" ] || exit 0
 case "$PC_BODY" in
   *[![:space:]]*)
@@ -35,6 +40,8 @@ takeover="bash \"$root/scripts/monitor.sh\" \"$proj\" 1790 \"$session\" claim"
 # Claude Desktop (záložka Code) monitory pluginů NESPOUŠTÍ (ověřeno 2026-11-09, engine 2.1.317) – agent by se
 # o nové zprávě dozvěděl až při příštím startu session. Proto mu hook řekne, ať si hlídač pustí sám nástrojem
 # Monitor (ten trvá nejvýš 30 min, pak ho agent spustí znovu). V terminálovém `claude` běží monitor pluginu sám.
+# Pojistka od 1.0.6: když se tenhle pokyn k agentovi nedostane (obnovená session) nebo hlídač po vypršení nespustí
+# znovu, připomene mu to prompt-check.sh (UserPromptSubmit) podle známky života hlídače.
 if [ "$CLAUDE_CODE_ENTRYPOINT" = "claude-desktop" ]; then
   cmd="bash \"$root/scripts/monitor.sh\" \"$proj\" 1790 \"$session\""
   printf '%s\n' "ProjectCreator $PC_PROJECT – hlídač zpráv: Claude Desktop monitory pluginů nespouští, zapni si ho sám hned při první odpovědi uživateli (jen čte, bez ptaní). Nástroj Monitor (je odložený → nejdřív ToolSearch \"select:Monitor\") s parametry: command = $cmd ; description = \"ProjectCreator $PC_PROJECT: zprávy AI agentů\" ; timeout_ms = 1800000. Když monitor skončí nebo vyprší, spusť ho znovu stejně (dokud session běží) – KROMĚ případu, kdy skončil řádkem „hlídání zpráv převzala jiná session“: pak ho už nespouštěj a uživateli to jednou řekni. Každý jeho řádek je upozornění → postupuj podle skillu projectcreator:komunikace-agentu. Uživateli zapnutí jednou krátce zmiň, opakované spuštění už neohlašuj."

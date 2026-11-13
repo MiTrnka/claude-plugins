@@ -28,9 +28,21 @@ pc_read_token || exit 0
 sq=""
 [ -n "$session" ] && sq="&session=$session"
 
+# Známka života pro prompt-check.sh (jen když známe session): soubor se obnovuje v každém kole a při konci se maže.
+alive=""
+if [ -n "$session" ]; then
+  pc_monitor_files "$PC_PROJECT" "$session"
+  mkdir -p "$PC_MONITOR_DIR" 2>/dev/null && alive="$PC_MONITOR_ALIVE"
+fi
+beat() { [ -n "$alive" ] && : > "$alive" 2>/dev/null; return 0; }
+trap '[ -n "$alive" ] && rm -f "$alive" 2>/dev/null' EXIT
+
 if [ "$4" = "claim" ] && [ -n "$session" ]; then
   pc_post "/api/agent/listen?project=$PC_PROJECT$sq" 15
-  [ "$PC_CODE" = "200" ] && echo "ProjectCreator $PC_PROJECT · hlídání zpráv teď drží tahle session."
+  if [ "$PC_CODE" = "200" ]; then
+    [ -n "$alive" ] && rm -f "$PC_MONITOR_LOST" 2>/dev/null
+    echo "ProjectCreator $PC_PROJECT · hlídání zpráv teď drží tahle session."
+  fi
 fi
 
 # Žije ještě proces Clauda? Bez CLAUDE_PID se nekontroluje. Na Windows (Git Bash) je CLAUDE_PID windowsové PID,
@@ -52,6 +64,7 @@ while :; do
   if [ "$max_s" -gt 0 ] && [ $((SECONDS + wait_s + 10)) -ge "$max_s" ]; then
     exit 0
   fi
+  beat
   started=$SECONDS
   pc_get "/api/agent/events/wait?project=$PC_PROJECT&timeout=$wait_s$sq" $((wait_s + 35))
   case "$PC_CODE" in
@@ -69,6 +82,8 @@ while :; do
       exit 0
       ;;
     409)
+      # Hlídání převzala jiná session: zapamatovat, ať prompt-check.sh hlídač téhle session nepřipomíná.
+      [ -n "$alive" ] && : > "$PC_MONITOR_LOST" 2>/dev/null
       msg=$(printf '%s' "$PC_BODY" | head -n 1)
       echo "${msg:-ProjectCreator $PC_PROJECT · hlídání zpráv převzala jiná session – hlídač znovu nespouštěj.}"
       exit 0
@@ -79,7 +94,7 @@ while :; do
       exit 0
       ;;
     429)
-      sleep 60
+      sleep 30; beat; sleep 30
       ;;
     *)
       sleep "$backoff"

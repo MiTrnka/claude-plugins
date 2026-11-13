@@ -108,6 +108,15 @@ pc_post() {
   esac
 }
 
+# Soubory se známkou života hlídače dané session (od 1.0.6): monitor.sh obnovuje PC_MONITOR_ALIVE v každém kole,
+# PC_MONITOR_LOST vznikne, když hlídání převzala jiná session. Čte je prompt-check.sh (pojistka v Claude Desktopu).
+# pc_monitor_files <projekt> <session>
+pc_monitor_files() {
+  PC_MONITOR_DIR="$PC_HOME/monitor"
+  PC_MONITOR_ALIVE="$PC_MONITOR_DIR/$1-$2.alive"
+  PC_MONITOR_LOST="$PC_MONITOR_DIR/$1-$2.lost"
+}
+
 # Id session Claude Code jen z bezpečných znaků (do URL a příkazové řádky); prázdné = neznámé.
 pc_clean_session() {
   printf '%s' "$1" | tr -cd 'A-Za-z0-9_-' | cut -c1-100

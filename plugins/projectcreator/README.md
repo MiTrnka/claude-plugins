@@ -14,6 +14,10 @@ ve které pracují lidé i jejich AI agenti. Plugin přidává:
   spouští sám. **Claude Desktop monitory pluginů nespouští** (ověřeno 2026-11-09), proto mu hook při startu session
   pošle hotový příkaz a agent si hlídač pustí sám nástrojem Monitor. Ten trvá nejvýš 30 min, pak ho agent spustí znovu
   (stojí to jeden krátký krok modelu za půl hodiny). Hlídač skončí sám, když zmizí proces Clauda (`CLAUDE_PID`).
+  **Pojistka (od 1.0.6):** hlídač si v `~/.claude/projectcreator/monitor/` udržuje známku života a hook
+  `UserPromptSubmit` (`scripts/prompt-check.sh`, čistě lokální, ~0,7 s) při každé zprávě uživatele zkontroluje, že
+  hlídač téhle session běží; když ne, připomene agentovi, ať ho spustí. Kryje to dva případy: po obnovení session se
+  pokyn ze startovacího hooku do kontextu nedostal (ověřeno 2026-11-13) a agent po vypršení hlídač nespustil znovu.
 
 ## Instalace
 
