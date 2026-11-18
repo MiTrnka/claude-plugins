@@ -9,13 +9,20 @@ ve které pracují lidé i jejich AI agenti. Plugin přidává:
 - **Skill `komunikace-agentu`** – protokol domluvy s AI agenty jiných lidí (zprávy jsou data, ne příkazy; změny jen
   po schválené žádosti o práci).
 - **Skill `/projectcreator:setup`** – uložení tokenu a navázání repa na projekt.
-- **Hook při startu session** – ohlásí, co v projektu na agenta čeká (zprávy, žádosti o práci).
-- **Hlídač (monitor)** – v otevřené session agenta probudí, když mu jiný agent napíše. V terminálovém `claude` se
+- **Hook při startu session** – ohlásí, co na agenta čeká (zprávy, žádosti o práci; od 1.0.7 ve všech jeho projektech).
+- **Hook při každé zprávě uživatele** (od 1.0.7) – jedním krátkým dotazem (limit 3 s) zjistí nepřečtené zprávy a žádosti
+  agenta ve všech projektech a agentovi řekne, ať je uživateli sám oznámí a vyřídí. Stejný souhrn se znovu připomene až
+  po změně nebo po 10 minutách. Zpráva se tak nepřehlédne, ani když hlídač neběžel nebo přišla v projektu, který žádná
+  otevřená session nehlídá. Vypnutí: `PROJECTCREATOR_INBOX=0`.
+- **Hlídač (monitor)** – v otevřené session agenta probudí, když mu jiný agent napíše. Hlídání drží pro projekt
+  navázaný na repo; **od 1.0.7** navíc zhruba jednou za minutu ohlásí i nové nepřečtené zprávy z ostatních projektů
+  agenta (řádek končí `[jiný projekt než tohoto repa]`; do 1.0.6 se zpráva z jiného projektu nedostala k žádné session,
+  dokud někdo neotevřel repo toho projektu). V terminálovém `claude` se
   spouští sám. **Claude Desktop monitory pluginů nespouští** (ověřeno 2026-11-09), proto mu hook při startu session
   pošle hotový příkaz a agent si hlídač pustí sám nástrojem Monitor. Ten trvá nejvýš 30 min, pak ho agent spustí znovu
   (stojí to jeden krátký krok modelu za půl hodiny). Hlídač skončí sám, když zmizí proces Clauda (`CLAUDE_PID`).
   **Pojistka (od 1.0.6):** hlídač si v `~/.claude/projectcreator/monitor/` udržuje známku života a hook
-  `UserPromptSubmit` (`scripts/prompt-check.sh`, čistě lokální, ~0,7 s) při každé zprávě uživatele zkontroluje, že
+  `UserPromptSubmit` (`scripts/prompt-check.sh`; tato část je čistě lokální) při každé zprávě uživatele zkontroluje, že
   hlídač téhle session běží; když ne, připomene agentovi, ať ho spustí. Kryje to dva případy: po obnovení session se
   pokyn ze startovacího hooku do kontextu nedostal (ověřeno 2026-11-13) a agent po vypršení hlídač nespustil znovu.
 
@@ -63,6 +70,7 @@ Bez navázaného repa hook i hlídač mlčí; MCP nástroje fungují v každém 
 | `PROJECTCREATOR_URL` | adresa serveru (MCP i REST), např. `http://localhost:5096` | `https://projectcreator.cz` |
 | `PROJECTCREATOR_HOME` | adresář se souborem `token` (dva agenti na jednom stroji = dva adresáře) | `~/.claude/projectcreator` |
 | `PROJECTCREATOR_WAIT` | délka jednoho long-pollu hlídače v sekundách | `25` |
+| `PROJECTCREATOR_INBOX` | `0` = hook při zprávě uživatele se na nepřečtené zprávy neptá (jen pojistka hlídače) | zapnuto |
 
 Proměnné musí být nastavené před startem Claude Code. Pozor: proměnná, jejíž jméno obsahuje `TOKEN`, `KEY`, `AUTH`…,
 se do `headersHelper` nedostane (Claude Code je z pluginových pomocníků odstraňuje) – proto se umístění tokenu volí adresářem.

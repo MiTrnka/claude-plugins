@@ -4,6 +4,7 @@
 #   - bez navázaného repa nebo bez tokenu skončí hned a potichu;
 #   - 401 (neplatný token) / 403 / 404 (projekt neexistuje nebo k němu agent nemá přístup) → jeden vysvětlující řádek a konec;
 #   - 429 → počká 60 s; chyba sítě / 5xx → backoff 5 → 10 → 20 → 40 → 60 s; úspěch backoff vynuluje.
+#   - od 1.0.7 hlásí i nepřečtené zprávy z OSTATNÍCH projektů agenta (řádek končí „[jiný projekt než tohoto repa]“);
 #   - skončí potichu, když zmizí proces Clauda, který ho spustil (CLAUDE_PID) – jinak by po zavření terminálu
 #     zůstal běžet jako sirotek a „spolykal" upozornění, která patří nové session (ověřeno 2026-11-09 na Windows);
 #   - volitelný 2. argument = nejdelší doba běhu v sekundách: hlídač pak skončí ČISTĚ mezi dvěma dotazy (pro nástroj
@@ -57,6 +58,37 @@ claude_alive() {
   fi
 }
 
+# Ostatní projekty agenta (od 1.0.7): hlídač dál drží hlídání jen projektu navázaného na repo, ale zhruba jednou za
+# minutu se podívá i na nepřečtené zprávy v ostatních projektech (souhrn /status nic nezabírá ani neoznačuje, takže
+# session, která ten projekt hlídá, o nic nepřijde) a každou novou věc ohlásí jedním řádkem. Bez toho se zpráva
+# z konverzace v jiném projektu nedostala k žádné session, dokud někdo neotevřel repo toho projektu (2026-11-18).
+# Co už ohlásil, si pamatuje v souboru session (přežije opakované spuštění hlídače po 30 minutách).
+others=""
+others_seen=""
+others_next=0
+if [ -n "$session" ]; then others_seen="$PC_MONITOR_DIR/others-$PC_PROJECT-$session.seen"; fi
+check_others() {
+  [ "$SECONDS" -ge "$others_next" ] || return 0
+  others_next=$((SECONDS + 55))
+  if [ -z "$others" ]; then
+    pc_other_projects 5 || return 0
+    others="$PC_OTHERS"
+  fi
+  pc_inbox_lines "$others" 5 || return 0
+  local seen="" line
+  [ -n "$others_seen" ] && [ -f "$others_seen" ] && seen=$(cat "$others_seen" 2>/dev/null)
+  [ -z "$others_seen" ] && seen="$others_mem"
+  printf '%s\n' "$PC_INBOX" | while IFS= read -r line || [ -n "$line" ]; do
+    [ -n "$line" ] || continue
+    printf '%s\n' "$seen" | grep -qxF -- "$line" && continue
+    printf 'ProjectCreator %s  [jiný projekt než tohoto repa]\n' "${line#• }"
+  done
+  # Zapamatovat přesně to, co teď čeká (přečtené věci tím ze seznamu vypadnou).
+  if [ -n "$others_seen" ]; then printf '%s\n' "$PC_INBOX" > "$others_seen" 2>/dev/null; else others_mem="$PC_INBOX"; fi
+  return 0
+}
+others_mem=""
+
 wait_s="${PROJECTCREATOR_WAIT:-25}"
 backoff=5
 while :; do
@@ -65,6 +97,7 @@ while :; do
     exit 0
   fi
   beat
+  check_others
   started=$SECONDS
   pc_get "/api/agent/events/wait?project=$PC_PROJECT&timeout=$wait_s$sq" $((wait_s + 35))
   case "$PC_CODE" in

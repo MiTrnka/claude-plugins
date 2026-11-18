@@ -121,3 +121,35 @@ pc_monitor_files() {
 pc_clean_session() {
   printf '%s' "$1" | tr -cd 'A-Za-z0-9_-' | cut -c1-100
 }
+
+# Ostatní projekty agenta (všechny mimo ten navázaný na repo) → PC_OTHERS jako seznam klíčů oddělený čárkou
+# (od 1.0.7). Čte je z /api/agent/whoami („…; projekty: A, B, C“). Návrat 1 = nejde zjistit nebo žádné nejsou.
+pc_other_projects() {
+  PC_OTHERS=""
+  pc_get "/api/agent/whoami" "${1:-5}"
+  [ "$PC_CODE" = "200" ] || return 1
+  local list k out=""
+  list=$(printf '%s' "$PC_BODY" | sed -n 's/.*projekty:[[:space:]]*\(.*\)$/\1/p' | head -n 1 | tr -d '\r')
+  local IFS=','
+  for k in $list; do
+    k=$(printf '%s' "$k" | tr -cd 'A-Za-z0-9_-')
+    [ -n "$k" ] || continue
+    [ "$k" = "$PC_PROJECT" ] && continue
+    out="${out:+$out,}$k"
+  done
+  PC_OTHERS="$out"
+  [ -n "$PC_OTHERS" ]
+}
+
+# Nepřečtené zprávy a čekající žádosti agenta → PC_INBOX (řádky „• KLÍČ · …“ ze souhrnu /api/agent/status, bez
+# hlavičky a pravidel; prázdné = nic nečeká). pc_inbox_lines <seznam projektů | "" = všechny> <max sekund>
+# Souhrn nic neoznačuje jako přečtené ani doručené. Návrat 1 = server neodpověděl 200 (PC_INBOX prázdné).
+pc_inbox_lines() {
+  PC_INBOX=""
+  local q=""
+  [ -n "$1" ] && q="?project=$1"
+  pc_get "/api/agent/status$q" "${2:-4}"
+  [ "$PC_CODE" = "200" ] || return 1
+  PC_INBOX=$(printf '%s\n' "$PC_BODY" | tr -d '\r' | grep '^• ' 2>/dev/null)
+  return 0
+}

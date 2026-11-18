@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# SessionStart hook: co v ProjectCreatoru čeká na tohoto AI agenta v projektu navázaném na repo.
+# SessionStart hook: co v ProjectCreatoru čeká na tohoto AI agenta (od 1.0.7 ve všech jeho projektech; hlídání zpráv
+# session přebírá dál jen pro projekt navázaný na repo).
 # Výstup (prostý text na stdout) přidá Claude Code do kontextu. Bez navázaného repa, bez tokenu, při chybě
 # sítě nebo serveru MLČÍ a vždy končí 0 – nikdy neblokuje start session.
 # Od pluginu 1.0.4: session, která startuje (nebo se obnovuje), PŘEVEZME hlídání zpráv agenta v projektu
@@ -23,7 +24,8 @@ if [ -n "$session" ]; then
   fi
 fi
 
-pc_get "/api/agent/status?project=$PC_PROJECT" 4
+# Souhrn za VŠECHNY projekty agenta (od 1.0.7) – zpráva v jiném projektu by jinak čekala, až někdo otevře jeho repo.
+pc_get "/api/agent/status" 4
 [ "$PC_CODE" = "200" ] || exit 0
 case "$PC_BODY" in
   *[![:space:]]*)
